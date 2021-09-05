@@ -1,5 +1,6 @@
 package com.payneteasy.jdbcproc.plugin.maven;
 
+import com.googlecode.jdbcproc.daofactory.annotation.AMetaLoginInfo;
 import com.googlecode.jdbcproc.daofactory.annotation.AStoredProcedure;
 import com.googlecode.jdbcproc.daofactory.impl.procedureinfo.ResultSetColumnInfo;
 import com.googlecode.jdbcproc.daofactory.impl.procedureinfo.StoredProcedureArgumentInfo;
@@ -17,8 +18,17 @@ import static java.util.stream.Collectors.toList;
 
 public class ProcedureInfoCreator {
 
+    private static final short ARGUMENT_IN = (short) StoredProcedureArgumentInfo.IN;
 
     private final SqlDataTypes dataTypes = new SqlDataTypes();
+
+    private final String loginUsername;
+    private final String loginRoleName;
+
+    public ProcedureInfoCreator(String loginUsername, String loginRoleName) {
+        this.loginUsername = loginUsername;
+        this.loginRoleName = loginRoleName;
+    }
 
     public List<StoredProcedureInfo> createProcedures(Class aClass) {
         return getAllMethods(aClass).stream()
@@ -27,14 +37,27 @@ public class ProcedureInfoCreator {
                 .collect(toList());
     }
 
-    private StoredProcedureInfo createProcedure(Method method) {
-        AStoredProcedure    procedure = method.getAnnotation(AStoredProcedure.class);
+    private StoredProcedureInfo createProcedure(Method aMethod) {
+        AStoredProcedure    procedure = aMethod.getAnnotation(AStoredProcedure.class);
         StoredProcedureInfo info      = new StoredProcedureInfo(procedure.name());
-        for (Class<?> type : method.getParameterTypes()) {
+
+        addMetaLogin(info, aMethod);
+
+        for (Class<?> type : aMethod.getParameterTypes()) {
             addArgumentFromType(info, type);
         }
-        addReturn(info, fixCollection(method.getReturnType(), method.getGenericReturnType()));
+        addReturn(info, fixCollection(aMethod.getReturnType(), aMethod.getGenericReturnType()));
         return info;
+    }
+
+    private void addMetaLogin(StoredProcedureInfo aInfo, Method aMethod) {
+        if(!aMethod.isAnnotationPresent(AMetaLoginInfo.class)) {
+            return;
+        }
+
+        aInfo.addColumn(loginUsername, ARGUMENT_IN, dataTypes.findArgumentDataType(String.class));
+        aInfo.addColumn(loginRoleName, ARGUMENT_IN, dataTypes.findArgumentDataType(String.class));
+
     }
 
     private Class<?> fixCollection(Class aClass, Type returnType) {
@@ -64,7 +87,7 @@ public class ProcedureInfoCreator {
                 .filter(method -> method.isAnnotationPresent(Column.class))
                 .forEach(method -> {
                     Column column = method.getAnnotation(Column.class);
-                    info.addColumn(column.name(), (short)StoredProcedureArgumentInfo.IN, dataTypes.findArgumentDataType(method.getReturnType()));
+                    info.addColumn(column.name(), ARGUMENT_IN, dataTypes.findArgumentDataType(method.getReturnType()));
                 });
         ;
     }

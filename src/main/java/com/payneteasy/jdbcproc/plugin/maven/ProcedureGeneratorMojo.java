@@ -15,7 +15,6 @@ import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -23,6 +22,8 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
 
+import static com.payneteasy.jdbcproc.plugin.maven.ClassUtils.getLastPackageName;
+import static com.payneteasy.jdbcproc.plugin.maven.FileUtils.createDirectories;
 import static java.lang.String.format;
 
 @Mojo(name = "generate",
@@ -32,19 +33,22 @@ import static java.lang.String.format;
 
 public class ProcedureGeneratorMojo extends AbstractMojo {
 
-    private final ProcedureInfoCreator procedureInfoCreator = new ProcedureInfoCreator();
-    private final File                 dir                  = new File("target/procedures");
-
-    /**
-     * The Maven project.
-     */
     @Parameter(defaultValue = "${project}", required = true, readonly = true)
-    MavenProject project;
+    private MavenProject project;
+
+    @Parameter(defaultValue = "username", required = true, readonly = true)
+    private String metaLoginUsername;
+
+    @Parameter(defaultValue = "role_name", required = true, readonly = true)
+    private String metaLoginRoleName;
+
+    @Parameter(defaultValue = "target/procedures", required = true, readonly = true)
+    private File targetDir;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
 
-        dir.mkdirs();
+        createDirectories(targetDir);
 
         ClassLoader classLoader = this.getClassLoader();
         Reflections reflections = new Reflections("", new SubTypesScanner(false), classLoader);
@@ -58,10 +62,13 @@ public class ProcedureGeneratorMojo extends AbstractMojo {
     private void generateProcedure(Class<?> clazz) {
         getLog().info("Generating procedure for class " + clazz);
 
+        ProcedureInfoCreator procedureInfoCreator = new ProcedureInfoCreator(metaLoginUsername, metaLoginRoleName);
+
+        File packageDir = createDirectories(new File(targetDir, getLastPackageName(clazz)));
 
         List<StoredProcedureInfo> procedures = procedureInfoCreator.createProcedures(clazz);
         for (StoredProcedureInfo procedure : procedures) {
-            File file = new File(dir, procedure.getProcedureName() + ".prc");
+            File file = new File(packageDir, procedure.getProcedureName() + ".prc");
             getLog().info(format("    Writing %s() to %s ...", procedure.getProcedureName(), file.getAbsolutePath()));
             try {
                 ProcedureWriter writer = new ProcedureWriter(file);

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
@@ -22,5 +23,14 @@ public class ClassUtils {
                 .collect(Collectors.toList()));
 
         return list;
+    }
+
+    public static String getLastPackageName(Class<?> aClass) {
+        StringTokenizer st = new StringTokenizer(aClass.getPackage().getName(), ".");
+        String lastName = "unknown_name";
+        while(st.hasMoreTokens()) {
+            lastName = st.nextToken();
+        }
+        return lastName;
     }
 }

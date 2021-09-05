@@ -1,5 +1,6 @@
 package com.payneteasy.jdbcproc.plugin.maven;
 
+import java.math.BigDecimal;
 import java.sql.Types;
 import java.util.Date;
 import java.util.HashMap;
@@ -13,12 +14,15 @@ public class SqlDataTypes {
     private final Map<Integer, String> examples      = new HashMap<>();
 
     public SqlDataTypes() {
-        addType(String.class  , Types.VARCHAR    , "varchar(50)"       , "varchar"   , "''");
-        addType(Long.class    , Types.BIGINT     , "int(10)  unsigned" , "int"       , "1");
-        addType(long.class    , Types.BIGINT     , "int(10)  unsigned" , "int"       , "1");
-        addType(Integer.class , Types.INTEGER    , "int(10)"           , "int"       , "1");
-        addType(int.class     , Types.INTEGER    , "int(10)"           , "int"       , "1");
-        addType(Date.class    , Types.TIMESTAMP  , "datetime"          , "datetime"  , "'2020.01.01 12:12:12'");
+        addType(String.class     , Types.VARCHAR    , "varchar(50)"       , "varchar"   , "''");
+        addType(Long.class       , Types.BIGINT     , "int(10)  unsigned" , "int"       , "1");
+        addType(long.class       , Types.BIGINT     , "int(10)  unsigned" , "int"       , "1");
+        addType(Integer.class    , Types.INTEGER    , "int(10)"           , "int"       , "1");
+        addType(int.class        , Types.INTEGER    , "int(10)"           , "int"       , "1");
+        addType(Date.class       , Types.TIMESTAMP  , "datetime"          , "datetime"  , "'2020.01.01 12:12:12'");
+        addType(BigDecimal.class , Types.DECIMAL    , "decimal(15,3)"     , "decimal"   , "10.12");
+        addType(boolean.class    , Types.BOOLEAN    , "boolean"           , "boolean"   , "false");
+        addType(Boolean.class    , Types.BOOLEAN    , "boolean"           , "boolean"   , "false");
     }
 
     private void addType(Class aClass, int aType, String aTypeName, String aResultName, String aExample) {
