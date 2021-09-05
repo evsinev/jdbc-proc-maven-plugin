@@ -20,7 +20,8 @@ public class ProcedureInfoCreator {
 
     private static final short ARGUMENT_IN = (short) StoredProcedureArgumentInfo.IN;
 
-    private final SqlDataTypes dataTypes = new SqlDataTypes();
+    private final SqlDataTypes   dataTypes      = new SqlDataTypes();
+    private final CreateOneToOne createOneToOne = new CreateOneToOne();
 
     private final String loginUsername;
     private final String loginRoleName;
@@ -80,6 +81,11 @@ public class ProcedureInfoCreator {
                     Column column = method.getAnnotation(Column.class);
                     info.addResultSetColumn(new ResultSetColumnInfo(column.name(), dataTypes.findArgumentDataType(method.getReturnType())));
                 });
+
+        List<ResultSetColumnInfo> oneToOneColumns = createOneToOne.createOneToOneColumns(type);
+        for (ResultSetColumnInfo column : oneToOneColumns) {
+            info.addResultSetColumn(column);
+        }
     }
 
     private void addArgumentFromType(StoredProcedureInfo info, Class<?> type) {
