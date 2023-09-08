@@ -10,7 +10,7 @@ Maven plugin for generating procedures stubs for all interfaces with AStoreProce
         <plugin>
             <groupId>com.payneteasy.jdbc-proc</groupId>
             <artifactId>jdbc-proc-maven-plugin</artifactId>
-            <version>1.0-1-SNAPSHOT</version>
+            <version>1.0-1</version>
             <configuration>
                 <metaLoginRoleName>role_name</metaLoginRoleName>
                 <metaLoginUsername>username</metaLoginUsername>
